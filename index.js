@@ -2,6 +2,7 @@ const qrcode = require('qrcode-terminal');
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const { EditPhotoHandler } = require('./feature/edit_foto');
 const { ChatAIHandler } = require('./feature/chat_ai');
+const { ImageAIHandler } = require('./feature/image_ai');
 
 
 
@@ -33,8 +34,12 @@ client.on('message', async msg => {
         await EditPhotoHandler(text, msg);
     }
     // #ask/question?
-    if (text.includes("#ask/")) {
+    if (text.includes("kang.")) {
         await ChatAIHandler(text, msg);
+    }
+	//image/question?
+	if (text.includes("img.")) {
+        await ImageAIHandler(text, msg);
     }
 
 });

@@ -1,28 +1,39 @@
 const axios = require('axios');
+const { MessageMedia } = require('whatsapp-web.js');
 const { API_KEY_OPEN_AI } = require('../config');
+const { Client } = require('whatsapp-web.js');
 
-const ChatAIHandler = async (text, msg) => {
+const ImageAIHandler = async (text, msg) => {
 
     const cmd = text.split('.');
 
     if (cmd.length < 2) {
-        return msg.reply('Format Salah. ketik *kang.your question*');
+        return msg.reply('Format Salah. ketik *img.your question*');
     }
 
+	
     //msg.reply('sedang diproses, tunggu bentar ya.');
+	
 
     const question = cmd[1];
-    const response = await ChatGPTRequest(question)
+    const response = await ImageGPTRequest(question);
 
     if (!response.success) {
         return msg.reply(response.message);
     }
-
-    return msg.reply(response.data);
+	
+	const media = await MessageMedia.fromUrl(response.data);
+	
+	
+	const chat = await msg.getChat();
+    
+    //return chat.sendMessage(media, {caption: "Image"}); 
+	
+     chat.sendMessage(media); 
 }
 
 
-const ChatGPTRequest = async (text) => {
+const ImageGPTRequest = async (text) => {
 
     const result = {
         success: false,
@@ -32,28 +43,25 @@ const ChatGPTRequest = async (text) => {
 
     return await axios({
         method: 'post',
-        url: 'https://api.openai.com/v1/completions',
+        url: 'https://api.openai.com/v1/images/generations',
         data: {
-            model: "text-davinci-003",
-            prompt: text,
-            max_tokens: 1000,
-            temperature: 0
+			prompt: text,
+			n: 1,
+            size: "512x512"
         },
         headers: {
-            "accept": "application/json",
             "Content-Type": "application/json",
-            "Accept-Language": "in-ID",
-            "Authorization": `Bearer ${API_KEY_OPEN_AI}`,
+            "Authorization": 'Bearer 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'
         },
     })
         .then((response) => {
             if (response.status == 200) {
 
-                const { choices } = response.data;
+                const { data } = response.data;
 
-                if (choices && choices.length) {
+                if (data && data.length) {
                     result.success = true;
-                    result.data = choices[0].text;
+                    result.data = data[0].url;
                 }
 
             } else {
@@ -69,5 +77,5 @@ const ChatGPTRequest = async (text) => {
 }
 
 module.exports = {
-    ChatAIHandler
+    ImageAIHandler
 }
